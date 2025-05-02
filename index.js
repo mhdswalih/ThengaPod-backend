@@ -32,7 +32,6 @@ io.on("connection", (socket) => {
     
     // Send existing users in the room to the new user
     const existingUsers = [];
-    console.log('this sis user s ',existingUsers.length);
     
     rooms[room].forEach(userId => {
       if (userId !== socket.id) {
@@ -43,17 +42,23 @@ io.on("connection", (socket) => {
       }
     });
     
+    console.log(`User ${email} joined room ${room}. Current users: ${rooms[room].size}`);
+    console.log(`Sending ${existingUsers.length} existing users to new user`);
+    
+    // Send existing users list to the new user
     io.to(socket.id).emit("room:users", existingUsers);
     io.to(socket.id).emit("room:join", data);
   });
 
   // Handle user calling another user
   socket.on("user:call", ({ to, offer }) => {
+    console.log(`User ${socket.id} is calling user ${to}`);
     io.to(to).emit("incoming:call", { from: socket.id, offer });
   });
 
   // Handle call acceptance
   socket.on("call:accepted", ({ to, ans }) => {
+    console.log(`User ${socket.id} accepted call from ${to}`);
     io.to(to).emit("call:accepted", { from: socket.id, ans });
   });
 
@@ -72,15 +77,17 @@ io.on("connection", (socket) => {
     const userInfo = userDetails.get(socket.id);
     
     if (userInfo) {
-      const { roomId } = userInfo;
+      const { roomId, email } = userInfo;
       
       // Remove user from room
       if (rooms[roomId]) {
         rooms[roomId].delete(socket.id);
+        console.log(`User ${email} (${socket.id}) left room ${roomId}. Remaining users: ${rooms[roomId].size}`);
         
         // If room is empty, delete it
         if (rooms[roomId].size === 0) {
           delete rooms[roomId];
+          console.log(`Room ${roomId} deleted because it's empty`);
         } else {
           // Notify others in the room that the user has left
           socket.to(roomId).emit("user:left", { id: socket.id });
