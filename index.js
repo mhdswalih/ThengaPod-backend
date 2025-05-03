@@ -10,7 +10,7 @@ const server = http.createServer(app);
 app.get('/health', (req, res) => {
   res.status(200).send('healthy...');
 });
-app.listen(PORT,()=>{
+server.listen(PORT,()=>{
   console.log('express Running'); 
 })
 
