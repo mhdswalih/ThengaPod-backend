@@ -1,16 +1,18 @@
 const { Server } = require("socket.io");
-// const express = require('express')
+const express = require('express');
+const http = require('http'); 
 
-// const app = express()
+const app = express();
+const PORT = 3000; 
 
+const server = http.createServer(app);
 
-// app.get('/health',(req,res)=>{
-//   res.status(200).send('healthy...')
-// })
-
-// app.listen(3000,()=>{
-//   console.log('express Running'); 
-// })
+app.get('/health', (req, res) => {
+  res.status(200).send('healthy...');
+});
+app.listen(PORT,()=>{
+  console.log('express Running'); 
+})
 
 const io = new Server(9000, {
   cors: true,
