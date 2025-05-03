@@ -1,43 +1,13 @@
 const { Server } = require("socket.io");
-const express = require('express');
-const http = require('http');
-const cors = require('cors');
 
-const app = express();
-const PORT =  3000;
-
-// Create HTTP server
-const server = http.createServer(app);
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).send('healthy...');
+const io = new Server(9000, {
+  cors: true,
 });
 
-// Root endpoint
-app.get('/', (req, res) => {
-  res.status(200).send('Thengapod WebRTC server is running!');
-});
-
-// Initialize Socket.IO with the HTTP server
-const io = new Server(server, {
-  cors: {
-    origin: "*", // In production, restrict this to your frontend domain
-    methods: ["GET", "POST"],
-    credentials: true
-  },
-  transports: ["websocket", "polling"]
-});
-
-// Room and user management
-const rooms = {}; 
+// Store user information
+const rooms = {}; // roomId -> Set of socket IDs
 const userDetails = new Map(); 
 
-// Socket.IO connection handling
 io.on("connection", (socket) => {
   console.log(`Socket Connected`, socket.id);
 
@@ -109,24 +79,23 @@ io.on("connection", (socket) => {
     if (userInfo) {
       const { roomId, email } = userInfo;
       
+      // Remove user from room
       if (rooms[roomId]) {
         rooms[roomId].delete(socket.id);
         console.log(`User ${email} (${socket.id}) left room ${roomId}. Remaining users: ${rooms[roomId].size}`);
         
+        // If room is empty, delete it
         if (rooms[roomId].size === 0) {
           delete rooms[roomId];
           console.log(`Room ${roomId} deleted because it's empty`);
         } else {
+          // Notify others in the room that the user has left
           socket.to(roomId).emit("user:left", { id: socket.id });
         }
       }
-
+      
+      // Remove user details
       userDetails.delete(socket.id);
     }
   });
-});
-
-
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
 });
