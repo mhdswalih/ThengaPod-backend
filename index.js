@@ -1,12 +1,25 @@
 const { Server } = require("socket.io");
+const express = require('express')
+
+const app = express()
+
+
+app.get('/health',(req,res)=>{
+  res.status(200).send('healthy...')
+})
+
+app.listen(3000,()=>{
+  console.log('express Running'); 
+})
 
 const io = new Server(9000, {
   cors: true,
 });
 
-// Store user information
-const rooms = {}; // roomId -> Set of socket IDs
-const userDetails = new Map(); // socketId -> { email, roomId }
+
+
+const rooms = {}; 
+const userDetails = new Map(); 
 
 io.on("connection", (socket) => {
   console.log(`Socket Connected`, socket.id);
@@ -79,22 +92,21 @@ io.on("connection", (socket) => {
     if (userInfo) {
       const { roomId, email } = userInfo;
       
-      // Remove user from room
+    
       if (rooms[roomId]) {
         rooms[roomId].delete(socket.id);
         console.log(`User ${email} (${socket.id}) left room ${roomId}. Remaining users: ${rooms[roomId].size}`);
         
-        // If room is empty, delete it
+       
         if (rooms[roomId].size === 0) {
           delete rooms[roomId];
           console.log(`Room ${roomId} deleted because it's empty`);
         } else {
-          // Notify others in the room that the user has left
+         
           socket.to(roomId).emit("user:left", { id: socket.id });
         }
       }
-      
-      // Remove user details
+
       userDetails.delete(socket.id);
     }
   });
