@@ -1,11 +1,19 @@
 const { Server } = require("socket.io");
+const express = require('express')
+
+const app = express()
+
+
+app.get('/health', (req, res) => {
+  return res.status(200).send('healthy...');
+});
 
 const io = new Server(9000, {
   cors: true,
 });
 
 // Store user information
-const rooms = {}; // roomId -> Set of socket IDs
+const rooms = {};
 const userDetails = new Map(); 
 
 io.on("connection", (socket) => {
@@ -99,3 +107,9 @@ io.on("connection", (socket) => {
     }
   });
 });
+
+
+app.listen(8888,()=>{
+  console.log('server running');
+  
+})
