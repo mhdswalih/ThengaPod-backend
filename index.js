@@ -1,12 +1,12 @@
 const { Server } = require("socket.io");
-const express = require('express')
+// const express = require('express')
 
-const app = express()
+// const app = express()
 
 
-app.get('/health', (req, res) => {
-  return res.status(200).send('healthy...');
-});
+// app.get('/health', (req, res) => {
+//   return res.status(200).send('healthy...');
+// });
 
 const io = new Server(9000, {
   cors: true,
@@ -109,7 +109,7 @@ io.on("connection", (socket) => {
 });
 
 
-app.listen(8888,()=>{
-  console.log('server running');
+// app.listen(8888,()=>{
+//   console.log('server running');
   
-})
+// })
